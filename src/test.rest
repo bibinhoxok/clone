@@ -1,0 +1,12 @@
+GET http://localhost:3000/api/customer
+###
+POST http://localhost:3000/api/feedback
+Content-Type: application/json
+
+{
+    "CustomerID":"67adb7d12b8ed3a359f1bcb9",
+    "ProductID":"123e4567-e89b-12d3-a456-426614174000",
+    "Rating": 5
+}
+###
+GET http://localhost:3000/api/feedback
