@@ -3,15 +3,16 @@ import OrderModel from "@/models/order";
 import { SortOrder } from 'mongoose';
 import { OrderSchema } from '@/schemas/orderSchema';
 import { PaginationedData } from '@next-server-actions/types';
-
-// Separate function to fetch order data from the database
 export async function getOrdersFromDB({
     page = 1,
     limit = 10,
     id,
     search = '',
     sortBy = 'createdAt',
-    sortOrder = 'desc'
+    sortOrder = 'desc',
+    customerId = '',
+    status
+    
 }:{
     page?: number,
     limit?: number,
@@ -19,6 +20,8 @@ export async function getOrdersFromDB({
     search?: string,
     sortBy?: string,
     sortOrder?: SortOrder
+    customerId?: string;
+    status?: string;
 }): Promise<PaginationedData<any> | any> {
     try {
         await connectDB();
@@ -36,6 +39,10 @@ export async function getOrdersFromDB({
             }
             return order;
         }
+        if (customerId) {
+            const orders = await OrderModel.find({ customer_id: customerId });
+            return orders;
+        }
 
         const query: any = {};
         if (search) {
@@ -43,7 +50,13 @@ export async function getOrdersFromDB({
                 { customer_id: { $regex: search, $options: 'i' } },
             ];
         }
-
+        if (status) {
+            if (search) {
+                query.status = status;
+            } else {
+                query.status = status;
+            }
+        }
         const totalDocs = await OrderModel.countDocuments(query);
         const orders = await OrderModel.find(query)
             .sort({

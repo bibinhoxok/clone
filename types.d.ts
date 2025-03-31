@@ -38,19 +38,19 @@ interface DataTableProps<TData, TValue> {
 interface ColumnConfig<T> {
     accessorKey: keyof T
     header: string | ((props: { table: any }) => JSX.Element)
-    cell?: (info: any) => React.ReactNode
+    cell?: (info: accessorKey) => React.ReactNode
     enableSorting?: boolean
 }
 
-interface ActionColumnConfig {
-    header?: (ActionRenderers<T> & { resetSelectedRows?: boolean })[];
-    cellRenderers?: ActionRenderers<T>[]
+interface ActionColumnConfig<T> {
+    header?: ActionHeader<T>[];
+    cellRenderers?: (row: T) => ActionRenderer<T>[];
 }
-
+type ActionIdentifier = "onEdit" | "toggleStatus" | "toggleStatusToDelivering" | "toggleStatusToCompleted" | "toggleStatusToProcessing" | "toggleStatusToCanceled" | "onDelete" | "onDelivering"| "viewInvoice";
 interface ActionRenderers<T> {
-    accessorKey: keyof T
+    accessorKey: ActionIdentifier
     title: string,
-    action: (T: any) => void
+    action: (item: T) => void
 }
 
 interface TablePaginationProps {

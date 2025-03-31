@@ -9,6 +9,7 @@ import {
 } from 'zustand/middleware'
 import { Product, zProductSchemaUdate } from "@/schemas/productSchema";
 import { z } from "zod";
+import { Promotion } from "@/schemas/promotionSchema";
 export const useToast = (message: string) => {
   const now = new Date(Date.now());
   return toast(message, {
@@ -65,6 +66,8 @@ export type CartItem = {
 
 type CartState = {
   items: CartItem[]
+  promotion?: Promotion
+  setPromottion: (promotion:Promotion|undefined) => void
   addItem: (product: z.infer<typeof zProductSchemaUdate>) => void
   removeItem: (productId: string) => void
   setQuantity: (productId: string, quantity: number) => void
@@ -110,7 +113,8 @@ export const useCart = create<CartState>()(
             (item) => item.product._id !== id
           ),
         })),
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], promotion: undefined }),
+      setPromottion: (promo:Promotion|undefined) => set({ promotion: promo }),
     }),
     {
       name: 'cart-storage',

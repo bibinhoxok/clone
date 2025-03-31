@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useSession, signOut } from "next-auth/react";
 import { SessionCustomer } from "@next-server-actions/types";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 
 const link = [
@@ -23,16 +23,16 @@ const link = [
     title: "Blog",
     link: "/blog-page"
   },
-  // {
-  //   title: "Từ Điển",
-  //   link: "/dictionary-page"
-  // },
+  {
+    title: "Xác định loại da",
+    link: "/quiz"
+  },
 ]
 
 const dropdown = [
   {
     title: "tài khoản",
-    link: "/user"
+    link: "/customer-detail"
   },
   {
     title: "Đơn mua",
@@ -43,6 +43,7 @@ const dropdown = [
 
 
 export default function Header() {
+  const router = useRouter();
   const { status, data: session } = useSession();
   // State để kiểm soát dropdown menu
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -95,7 +96,7 @@ export default function Header() {
               <Link href={"#"} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 onClick={() => {
                   signOut({ redirect: false }).then(() => {
-                    redirect("/")
+                    router.push("/")
                   });
                 }}
               >Đăng xuất</Link>

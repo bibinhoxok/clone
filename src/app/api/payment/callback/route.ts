@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     // Update the order status to 'delivering'
     const updateResult = await OrderModel.updateOne(
       { _id: new mongoose.Types.ObjectId(orderId) },
-      { $set: { status: 'delivering', updatedAt: new Date() } }
+      { $set: { status: 'processing', updatedAt: new Date() } }
     );
 
     if (updateResult.modifiedCount === 0) {

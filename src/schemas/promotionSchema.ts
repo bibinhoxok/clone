@@ -7,7 +7,7 @@ extendZod(z);
 // Define the schema (!!important)
 export const PromotionSchema = z.object({
     name: z.string().min(3).max(20).default("test"),
-    code: z.string().default("test"),
+    code: z.string().unique(),
     discount_type: z.string().default("test"),
     discount_value: z.number().min(0),
     start_date: z.date().default(new Date()),

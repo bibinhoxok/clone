@@ -12,6 +12,7 @@ const GET = async (req: Request) => {
         const sortOrder = searchParams.get('sortOrder') === 'asc' ? 1 : -1;
         const nameFilter = searchParams.get('name');
         const isActiveFilter = searchParams.get('is_active');
+        const code = searchParams.get('code');
         const filter: FilterQuery<typeof PromotionModel> = {};
         if (nameFilter) {
             filter.name = { $regex: nameFilter, $options: 'i' };
@@ -41,6 +42,20 @@ const GET = async (req: Request) => {
             [sortBy]: sortOrder as SortOrder,
             _id: 1 as SortOrder,
         };
+
+        if (code) {
+            const promotion = await PromotionModel.findOne({ code });
+            if (!promotion) {
+                return new Response(JSON.stringify({ message: "Promotion not found" }), {
+                    status: 404,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+            return new Response(JSON.stringify(promotion), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
 
         const totalDocs = await PromotionModel.countDocuments(filter);
         const promotions = await PromotionModel.find(filter)

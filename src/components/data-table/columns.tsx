@@ -13,13 +13,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ColumnConfig, ActionColumnConfig } from "@next-server-actions/types"
+import { ColumnConfig, ActionColumnConfig, ActionRenderers } from "@next-server-actions/types"
 
 
 
 export function createColumns<T extends object>(
   config: ColumnConfig<T>[],
-  actions?: ActionColumnConfig,
+  actions?: ActionColumnConfig<T>,
   setSortData?: React.Dispatch<React.SetStateAction<{ sortBy: string, sortOrder: string } | null>>,
   SortData?: { sortBy: string; sortOrder: string } | null
 ): ColumnDef<T>[] {
@@ -99,28 +99,31 @@ export function createColumns<T extends object>(
       },
       cell: ({ row }) => {
         const item = row.original
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              {actions.cellRenderers && actions.cellRenderers.map(
-                (cell, index) => (
+        // Ensure actions.cellRenderers is an array of functions
+        const cellRenderers = actions.cellRenderers;
+        if (typeof cellRenderers === 'function') {
+          const actionRenderers: ActionRenderers<T>[] = cellRenderers(item);
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                {actionRenderers.map((cell, index) => (
                   <div key={index}>
                     <DropdownMenuItem onClick={() => cell.action(item)}>{cell.title}</DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </div>
-                )
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        }
+        return null;
       },
     })
   }

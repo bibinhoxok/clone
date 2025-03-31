@@ -8,7 +8,7 @@ import { Staff } from "@/schemas/staffSchema";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CreateUserForm } from "@/components/forms/staff/create-staff-form";
 import { TablePagination } from "@/components/data-table/table-pagination";
-import { RowSelectionState, TablePaginationProps } from "@next-server-actions/types";
+import { ActionRenderers, RowSelectionState, TablePaginationProps } from "@next-server-actions/types";
 import { deleteStaff, toggleActiveStatus } from "@/actions/staffActions";
 import { useToast } from "@/lib/custom-hooks"
 export default function ExampleTablePage() {
@@ -192,6 +192,7 @@ export default function ExampleTablePage() {
         enableSorting: false,
         header: ({ table }) => (
           <Checkbox
+            className="-translate-x-4"
             checked={table.getIsAllRowsSelected()}
             onCheckedChange={(value) => {
               table.toggleAllRowsSelected(!!value);
@@ -215,6 +216,7 @@ export default function ExampleTablePage() {
 
         cell: ({ row }) => (
           <Checkbox
+            className="translate-x-4"
             checked={selectedRows.has(row.original._id)}
             onCheckedChange={(value) => {
               handleRowSelectionChange(row.original._id, !!value);
@@ -286,7 +288,7 @@ export default function ExampleTablePage() {
           },
         },
       ],
-      cellRenderers: [
+      cellRenderers:(row: Staff): ActionRenderers<Staff>[]=>[
         {
           accessorKey: "onEdit",
           title: "Edit",
@@ -299,14 +301,14 @@ export default function ExampleTablePage() {
           accessorKey: "toggleStatus",
           title: "Toggle Status",
           action: (item) => {
-            handleToggleStatus(item._id);
+            handleToggleStatus(item._id.toString());
           },
         },
         {
           accessorKey: "onDelete",
           title: "Delete",
           action: (item) => {
-            handleDeleteStaff(item._id);
+            handleDeleteStaff(item._id.toString());
           },
         },
       ],

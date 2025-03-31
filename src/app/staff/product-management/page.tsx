@@ -6,7 +6,7 @@ import { createColumns } from "@/components/data-table/columns";
 import { Badge } from "@/components/ui/badge";;
 import { Checkbox } from "@/components/ui/checkbox";
 import { TablePagination } from "@/components/data-table/table-pagination";
-import { RowSelectionState, TablePaginationProps } from "@next-server-actions/types";
+import { ActionRenderers, RowSelectionState, TablePaginationProps } from "@next-server-actions/types";
 import { useToast } from "@/lib/custom-hooks"
 import { Product } from "@/schemas/productSchema"
 import { deleteProduct, toggleActiveStatus } from "@/actions/productActions";
@@ -319,7 +319,7 @@ export default function ExampleTablePage() {
                     },
                 },
             ],
-            cellRenderers: [
+            cellRenderers: (row: Product): ActionRenderers<Product>[]=>[
                 {
                     accessorKey: "onEdit",
                     title: "Edit",
@@ -332,14 +332,14 @@ export default function ExampleTablePage() {
                     accessorKey: "toggleStatus",
                     title: "Toggle Status",
                     action: (item) => {
-                        handleToggleStatus(item._id);
+                        handleToggleStatus(item._id.toString());
                     },
                 },
                 {
                     accessorKey: "onDelete",
                     title: "Delete",
                     action: (item) => {
-                        handleDeleteProduct(item._id);
+                        handleDeleteProduct(item._id.toString());
                     },
                 },
             ],

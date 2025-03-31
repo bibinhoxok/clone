@@ -70,8 +70,9 @@ export async function checkOutOrder(formData: FormData):Promise<ActionReturn> {
         const rawData = Object.fromEntries(formData.entries());
         const orderData = JSON.parse(rawData.order as string);
         const orderDetailData = JSON.parse(rawData.orderDetail as string);
-        console.log(orderData, orderDetailData)
+        
         const orderParsed = OrderSchema.parse(orderData);
+        console.log(orderParsed)
         await connectDB();
         const order = await OrderModel.create(orderParsed);
         if (orderDetailData) {

@@ -22,7 +22,6 @@ export default async function SimpleInvoice({
   const province = addressData.province.find((item) => item.idProvince == order.shippingAddress.provinceId)
   const district = addressData.district.find((item) => item.idProvince == order.shippingAddress.provinceId && item.idDistrict == order.shippingAddress.districtId)
   const commune = addressData.commune.find((item) => item.idDistrict == order.shippingAddress.districtId && item.idCommune == order.shippingAddress.communeId)
-  const productPromise = async (id:string):Promise<any> => await getProductById(id)
   return (
     <div className="mt-10">
       <h2 className="text-2xl font-semibold mb-4">Thanh toán thành công</h2>
