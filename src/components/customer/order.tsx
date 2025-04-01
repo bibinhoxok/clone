@@ -9,7 +9,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { Customer } from "@/schemas/customerSchema";
 import { ReactNode, useEffect, useState } from "react";
@@ -19,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { RatingDialog } from "./rating-dialog"
 import { RefundDialog } from "./refund-dialog"
+import Link from "next/link";
 
 interface OrderItemDetail {
 	order_detail_id: string;
@@ -170,9 +170,11 @@ export function CustomerOrders() {
 													<Badge variant="outline" className="font-bold">
 														{order.payment_method}
 													</Badge>
-													<Button variant="outline" size="sm">
-														Xem hóa đơn
-													</Button>
+													<Link href={`/${order._id}/invoice`}>
+														<Button variant="outline" size="sm">
+															Xem hóa đơn
+														</Button>
+													</Link>
 												</div>
 												<Badge className={statusMap[order.status].color}>
 													{statusMap[order.status].label}

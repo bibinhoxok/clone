@@ -10,6 +10,9 @@ import { getOrderDetail } from "@/app/api/order/orderDetail/util"
 import addressData from "@/data/address.json"
 import { OrderDetail } from "@/schemas/orderDetailSchema"
 import { getProductById } from "@/app/api/product/util"
+import { GoBackButton } from "@/components/go-back-button"
+import { PrintButton } from "@/components/print-button"
+import { SendInvoiceButton } from "@/components/send-invoice-button"
 
 export default async function SimpleInvoice({
   params,
@@ -122,14 +125,9 @@ export default async function SimpleInvoice({
         </CardContent>
 
         <CardFooter className="flex justify-end gap-4">
-          <Button variant="outline" className=" ">
-            <Printer className="mr-2 h-4 w-4" />
-            Print
-          </Button>
-          <Button className="">
-            <Send className="mr-2 h-4 w-4" />
-            Send Invoice
-          </Button>
+          <GoBackButton/>
+          <PrintButton/>
+          <SendInvoiceButton/>
         </CardFooter>
       </Card>
     </div>

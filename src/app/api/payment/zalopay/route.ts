@@ -76,20 +76,6 @@ const POST = async (request: Request) => {
         const developmentBaseUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/` : null;
         const localBaseUrl = process.env.NGROK_BASE_URL;
         const baseUrl = productionBaseUrl || developmentBaseUrl || localBaseUrl || `https://23f1-14-226-225-128.ngrok-free.app/`;
-
-<<<<<<< HEAD
-=======
-        // Use VERCEL_PROJECT_PRODUCTION_URL for production
-        const productionBaseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}/` : null;
-        // Use NEXT_PUBLIC_VERCEL_URL for development or preview
-        const developmentBaseUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/` : null;
-        // Use NGROK_BASE_URL for local development
-        const localBaseUrl = process.env.NGROK_BASE_URL;
-
-        // Determine the base URL based on the environment
-        const baseUrl = productionBaseUrl || developmentBaseUrl || localBaseUrl || `https://23f1-14-226-225-128.ngrok-free.app/`;
-
->>>>>>> cd5acdf0b59ee19bdfa5a207849cc1e1e55d6b29
         const redirectUrl = baseUrl + orderParsed._id.toString() + "/invoice";
         const callbackUrl = baseUrl + 'api/payment/callback?orderId=' + orderParsed._id;
 

@@ -132,7 +132,7 @@ export default function ShoppingCart() {
 								<Button onClick={handlePromotion}>Áp dụng</Button>
 							</div>
 							{promtionMessage && <p className="text-red-500 ml-5">{promtionMessage}</p>}
-							{promotion && <p className="text-green-500 ml-5">đã áp dụng mã giảm giá: {promotion.name}</p>}
+							{promotion && promotion.discount_type === 'percentage' && <p className="text-green-500 ml-5">đã áp dụng mã giảm giá: {promotion.name}</p>}
 						</div>
 						<div>
 							<p>Tổng tiền hàng: {subtotal.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>

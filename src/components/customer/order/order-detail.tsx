@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Order } from "@/schemas/orderSchema";
 import { Product } from "@/schemas/productSchema";
 import { RatingDialog } from "../rating-dialog";
+import { createFeedback } from "@/actions/feedbackActions";
+import { useToast } from "@/lib/custom-hooks";
 
 interface OrderItemDetail {
   order_detail_id: string;
@@ -51,7 +53,18 @@ export function OrderItem({ _id, customerId, payment_method, status }: OrderItem
 
     fetchOrderItemDetails();
   }, [_id]);
-  const handleRatingSubmit = ()=>{}
+  const handleRatingSubmit = async(values: any)=>{
+    console.log("Rating submitted:", values)
+    const ratingForm = new FormData();
+    ratingForm.append("customer_id", customerId);
+    ratingForm.append("product_id", values.product_id);
+    ratingForm.append("rating", values.rating);
+    ratingForm.append("comment", values.comment);
+    const status = await createFeedback('',ratingForm);
+    if (status.message){
+      useToast(status.message)
+    }
+  }
   return (
     <>
       {orderItemDetails && orderItemDetails.order_details.length > 0 ? (

@@ -1,25 +1,45 @@
 'use server';
 
 import { connectDB } from '@/lib/mongodb';
+import { ActionReturn } from '@next-server-actions/types';
 import FeedbackModel from "@/models/feedback";
 import { FeedbackSchema, zFeedbackSchemaUdate } from '@/schemas/feedbackSchema';
 import { revalidatePath } from 'next/cache';
 import { ZodError } from 'zod';
 
-export async function createFeedback(formData: FormData) {
+export async function createFeedback(prevState: any, formData: FormData): Promise<ActionReturn> {
   try {
-    const rawData = Object.fromEntries(formData.entries());
-    const feedbackData = FeedbackSchema.parse(rawData); // Zod validation
+    const rawData = Object.fromEntries(formData);
+    const convertedData = {
+      ...rawData,
+      rating: Number(rawData.rating),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const feedbackData = FeedbackSchema.parse(convertedData);
 
     await connectDB();
     await FeedbackModel.create(feedbackData);
-    revalidatePath('/feedbacks'); // Revalidate the feedback list page
-    return { message: 'Feedback created successfully!' };
+    revalidatePath('/feedbacks');
+    return { message: 'Feedback created successfully!', success: true };
   } catch (error) {
-      if (error instanceof ZodError) {
-        return { error: error.flatten() };
+    if (error instanceof ZodError) {
+      const flattenedError = error.flatten().fieldErrors;
+      const firstErrorKey = Object.keys(flattenedError)[0]; // Get the first key
+
+      if (firstErrorKey) {
+        const firstErrorMessage = flattenedError[firstErrorKey]?.[0];
+        if (firstErrorMessage) {
+          return {
+            message: `${firstErrorKey}: ${firstErrorMessage}`,
+            success: false,
+            formData,
+          };
+        }
       }
-      return { error: 'Failed to create feedback.' }; // Generic error message
+      return { message: "Validation error occurred.", success: false, formData }; //fallback message
+    }
+    return { message: "Failed to create feedback.", success: false, formData };
   }
 }
 
