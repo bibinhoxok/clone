@@ -20,8 +20,11 @@ import { Button } from "@/components/ui/button"
 import SearchableSelect from "@/components/searchable-select"
 import { createCategory } from "@/actions/categoryActions"
 import { Loader2 } from "lucide-react"
+import MultiSelect, { Option } from "@/components/multi-select"
+import { createSkinType } from "@/actions/skinTypeActions"
 
-type ProductFormValues = z.infer<typeof ProductSchema>
+const ExtendedProductSchema = ProductSchema.extend({ skintype_recomendation: z.array(z.string()) })
+type ProductFormValues = z.infer<typeof ExtendedProductSchema>
 
 const initialState: FormState = {
     message: "",
@@ -37,6 +40,7 @@ const initialProductState: ProductFormValues = {
     image_url: undefined,
     createdAt: new Date(),
     updatedAt: new Date(),
+    skintype_recomendation: [],
 };
 
 // Reducer function for managing product state
@@ -84,6 +88,7 @@ export function AddProductForm({ onProductAdded }: { onProductAdded?: () => void
     const [state, formAction, isPending] = useActionState(createProduct, initialState);
     const [productState, dispatch] = useReducer(productReducer, initialProductState);
     const [categorySelections, setCategorySelections] = useState<Selection[]>([])
+    const [skintypeSelections, setSkintypeSelections] = useState<Option[]>([]) // Change type here
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -107,8 +112,29 @@ export function AddProductForm({ onProductAdded }: { onProductAdded?: () => void
         }
     }
 
+    const fetchSkinTypeData = async () => {
+        setIsLoading(true);
+        try {
+            const res = await fetch('/api/skinType')
+            if (!res.ok) {
+                throw new Error(`Failed to fetch skin types: ${res.statusText}`);
+            }
+            const rawData = await res.json();
+            const formattedData: Option[] = rawData.data.map((item: any) => ({ // Change type here
+                value: item._id,
+                label: item.name
+            }))
+            setSkintypeSelections(formattedData)
+        } catch (error) {
+            console.error("Error fetching skin types:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     useEffect(() => {
         fetchCategoryData()
+        fetchSkinTypeData()
     }, [])
 
 
@@ -157,6 +183,16 @@ export function AddProductForm({ onProductAdded }: { onProductAdded?: () => void
         return result
     }, [])
 
+    const handleCreateNewSkinTypeSelection = useCallback(async (inputValue: string): Promise<void> => {
+        const formData = new FormData();
+        formData.append('name', inputValue);
+        const result = await createSkinType(initialState, formData);
+        if (result.success) {
+            fetchSkinTypeData()
+        }
+        useToast(result.message)
+    }, [])
+
     const handleSubmit = async () => {
         setIsSubmitting(true);
         const formData = new FormData();
@@ -168,8 +204,11 @@ export function AddProductForm({ onProductAdded }: { onProductAdded?: () => void
                 } else if (value !== undefined && value !== null) {
                     if (key === 'createdAt' || key === 'updatedAt') {
                         formData.append(key, Date.now().toString());
+                    } else if (Array.isArray(value)) {
+                        value.forEach((item) => formData.append(key, item));
+                    } else {
+                        formData.append(key, value.toString());
                     }
-                    formData.append(key, value.toString());
                 }
             }
         }
@@ -177,9 +216,18 @@ export function AddProductForm({ onProductAdded }: { onProductAdded?: () => void
         useToast(result.message)
         if (result.success) {
             dispatch({ type: 'RESET' })
+            onProductAdded?.()
         }
         setIsSubmitting(false);
     };
+
+    const handleMultiSelectChange = useCallback((values: string[]) => {
+        dispatch({
+            type: 'UPDATE_FIELD',
+            field: "skintype_recomendation",
+            value: values,
+        });
+    }, []);
 
     return (
         <form id="add-product-form" className="space-y-6">
@@ -259,6 +307,21 @@ export function AddProductForm({ onProductAdded }: { onProductAdded?: () => void
                             />
                         )}
                     </FormField>
+
+                    <FormField name="skintype_recomendation" label="Skin Type Recommendation">
+                        {isLoading ? (
+                            <div>Loading skin type recommendations...</div>
+                        ) : (
+                            <MultiSelect
+                                options={skintypeSelections}
+                                allowCreate={true}
+                                value={productState.skintype_recomendation}
+                                onChange={handleMultiSelectChange}
+                                handleCreateNew={handleCreateNewSkinTypeSelection} 
+                                placeholder="Select skin type recommendations..."
+                            />
+                        )}
+                    </FormField>
                 </TabsContent>
 
                 <TabsContent value="media" className="space-y-4 pt-4">
@@ -268,7 +331,7 @@ export function AddProductForm({ onProductAdded }: { onProductAdded?: () => void
                                 src={productState.image_url}
                                 width={500}
                                 height={500}
-                                alt="Picture of the author"
+                                alt="Product Image"
 
                             />
                             <Button className="m-4" onClick={() => dispatch({

@@ -3,11 +3,12 @@ import ProductModel from '@/models/product';
 import FeedbackModel from '@/models/feedback';
 import CategoryModel from '@/models/category';
 import SkinTypeModel from '@/models/skinType';
-import { Product } from '@/schemas/productSchema';
-import { Feedback } from '@/schemas/feedbackSchema';
-import { Category } from '@/schemas/categorySchema';
-import { SkinType } from '@/schemas/skinTypeSchema';
+import { Product, zProductSchemaUdate } from '@/schemas/productSchema';
+import { Feedback, zFeedbackSchemaUdate } from '@/schemas/feedbackSchema';
+import { Category, zCategorySchemaUdate } from '@/schemas/categorySchema';
+import { SkinType, zSkinTypeSchemaUdate } from '@/schemas/skinTypeSchema';
 import { isValidObjectId } from 'mongoose';
+import { z } from 'zod';
 
 export async function getProductById(id: string): Promise<Product | any> {
     try {
@@ -25,7 +26,45 @@ export async function getProductById(id: string): Promise<Product | any> {
     }
 }
 
-export async function getProductDetail(productId: string) {
+// Define a Zod schema for the feedback object
+const zFeedbackObject = z.object({
+    name: z.string(),
+    time: z.string(),
+    rating: z.number(),
+    title: z.string(),
+    comment: z.string(),
+});
+
+// Define a Zod schema for the category object
+const zCategoryObject = zCategorySchemaUdate.omit({
+    createdAt: true,
+    updatedAt: true,
+});
+
+// Define a Zod schema for the skin type object
+const zSkinTypeObject = zSkinTypeSchemaUdate.omit({
+    createdAt: true,
+    updatedAt: true,
+});
+
+// Define the ProductData type using Zod
+export const zProductData = zProductSchemaUdate.omit({
+    createdAt: true,
+    updatedAt: true,
+}).extend({
+    feedbacks: z.array(zFeedbackObject).optional(),
+    category: zCategoryObject.nullable(),
+    skinType: zSkinTypeObject.nullable(),
+    relatedProducts: z.array(zProductSchemaUdate.omit({
+        createdAt: true,
+        updatedAt: true,
+    })).optional(),
+});
+
+// Infer the TypeScript type from the Zod schema
+type ProductData = z.infer<typeof zProductData>;
+
+export async function getProductDetail(productId: string): Promise<ProductData | { message: string }> {
     try {
         await connectDB();
 
@@ -33,17 +72,24 @@ export async function getProductDetail(productId: string) {
             return { message: "Invalid product ID" };
         }
 
-        const product: Product | null = (await ProductModel.findById(productId).lean())as Product | null;
+        const product: Product | null = (await ProductModel.findById(productId).lean()) as Product | null;
 
         if (!product) {
             return { message: "Product not found" };
         }
 
         // Fetch feedbacks for the product
-        const feedbacks: Feedback[] = (await FeedbackModel.find({ product_id: productId }).lean()) as Feedback[];
+        const feedbacksRaw: Feedback[] = (await FeedbackModel.find({ product_id: productId }).lean()) as Feedback[];
+        const feedbacks: ProductData['feedbacks'] = feedbacksRaw.map((feedback) => ({
+            name: feedback.customer_id.toString(),
+            time: feedback.createdAt.toLocaleString(),
+            rating: feedback.rating,
+            title: feedback.comment,
+            comment: feedback.comment,
+        }));
 
         // Fetch category details
-        const category: Category | null =( await CategoryModel.findById(product.category_id).lean())as Category | null;
+        const category: Category | null = (await CategoryModel.findById(product.category_id).lean()) as Category | null;
 
         // Fetch skin type recommendation details (if available)
         let skinType: SkinType | null = null;
